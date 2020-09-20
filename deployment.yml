@@ -28,21 +28,20 @@ spec:
         - containerPort: 9092
           name: server
 ---
-apiVersion: v1
 kind: Service
+apiVersion: v1
 metadata:
-  name: kafka
-  labels:
-    run: kafka
+  name: kafka-service
 spec:
-  type: NodePort
-  ports:
-  - port: 9092
-    targetPort: 9092
-    protocol: TCP
-    name: http
+  type: LoadBalancer
+  loadBalancerIP: 192.168.1.110
   selector:
-    run: kafka
+    app: kafka
+  ports:
+  - name: kafka-http
+    port: 9092
+    targetPort: 9092
+    nodePort: 32420
 ---
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
