@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+spec:
+  selector:
+    matchLabels:
+      app: kafka
+  serviceName: kafka-hs
+  replicas: 3
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: OrderedReady
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+      - name: kafka
+        imagePullPolicy: Always
+        image: mjayson/rpi-kafka
+        resources:
+         requests:
+           memory: "1Gi"
+           cpu: "500m"
+        ports:
+        - containerPort: 9092
+          name: server
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: kafka-service
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.1.110
+  selector:
+    app: kafka
+  ports:
+  - name: kafka-http
+    port: 9092
+    targetPort: 9092
+    nodePort: 32420
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: kafka-pdb
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: kafka   
